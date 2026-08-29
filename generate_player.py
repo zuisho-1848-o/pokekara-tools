@@ -177,6 +177,48 @@ TEMPLATE = """<!doctype html>
     color: var(--accent);
     border-color: var(--accent);
   }
+  .info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: bold;
+    font-style: normal;
+    text-transform: none;
+    cursor: pointer;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .info-popover {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    margin-top: 6px;
+    width: 260px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: normal;
+    color: var(--fg);
+    cursor: default;
+    white-space: normal;
+  }
+  .info-popover.open { display: block; }
+  .info-popover dl { margin: 0; }
+  .info-popover dt { font-weight: bold; margin-top: 6px; }
+  .info-popover dt:first-child { margin-top: 0; }
+  .info-popover dd { margin: 0 0 0 0; color: var(--muted); }
   .player {
     position: fixed;
     left: 0; right: 0; bottom: 0;
@@ -232,6 +274,17 @@ TEMPLATE = """<!doctype html>
       <option value="collab">コラボのみ</option>
     </select>
   </label>
+  <label>マイ評価
+    <select id="myRatingFilter">
+      <option value="all">すべて</option>
+      <option value="none">未評価のみ</option>
+      <option value="1">★1以上</option>
+      <option value="2">★2以上</option>
+      <option value="3">★3以上</option>
+      <option value="4">★4以上</option>
+      <option value="5">★5</option>
+    </select>
+  </label>
   <button id="clearFilters">絞り込み解除</button>
 </div>
 <div class="status" id="status"></div>
@@ -241,7 +294,17 @@ TEMPLATE = """<!doctype html>
     <tr>
       <th data-key="title">タイトル</th>
       <th data-key="score">評価</th>
-      <th data-key="myRating">マイ評価</th>
+      <th data-key="myRating" class="myrating-th">マイ評価<span class="info-btn" id="myRatingInfoBtn">i</span>
+        <div class="info-popover" id="myRatingInfoPopover">
+          <dl>
+            <dt>★5</dt><dd>人に薦めたい・一番聞いてほしい</dd>
+            <dt>★4</dt><dd>及第点以上、欠点なし（自信作だが5ほどの目玉ではない）</dd>
+            <dt>★3</dt><dd>聞かせられるが、自分でわかる小さな粗がある</dd>
+            <dt>★2</dt><dd>高音などちょっと聞き苦しいところがある</dd>
+            <dt>★1</dt><dd>撮り直したいし聞かれたくない</dd>
+          </dl>
+        </div>
+      </th>
       <th data-key="posted_at">投稿日</th>
       <th data-key="duration">長さ</th>
     </tr>
@@ -287,6 +350,7 @@ const scoreMaxEl = document.getElementById('scoreMax');
 const dateMinEl = document.getElementById('dateMin');
 const dateMaxEl = document.getElementById('dateMax');
 const collabFilterEl = document.getElementById('collabFilter');
+const myRatingFilterEl = document.getElementById('myRatingFilter');
 
 let ratingsBackend = 'server';
 
@@ -339,6 +403,7 @@ function applyFilters() {
   const dMin = dateMinEl.value || '';
   const dMax = dateMaxEl.value || '';
   const collabMode = collabFilterEl.value;
+  const myRatingMode = myRatingFilterEl.value;
 
   let list = SONGS.filter(s => {
     if (q && !s.title.toLowerCase().includes(q)) return false;
@@ -349,6 +414,8 @@ function applyFilters() {
     if (dMax && d && d > dMax) return false;
     if (collabMode === 'solo' && s.collab) return false;
     if (collabMode === 'collab' && !s.collab) return false;
+    if (myRatingMode === 'none' && s.myRating) return false;
+    if (myRatingMode !== 'all' && myRatingMode !== 'none' && (s.myRating || 0) < parseInt(myRatingMode, 10)) return false;
     return true;
   });
 
@@ -398,8 +465,12 @@ function render() {
       const r = parseInt(starEl.dataset.r, 10);
       const newRating = s.myRating === r ? null : r;
       s.myRating = newRating;
-      ratingTd.innerHTML = starsHtml(newRating || 0);
       saveRating(s.id, newRating);
+      if (myRatingFilterEl.value !== 'all') {
+        applyFilters();
+      } else {
+        ratingTd.innerHTML = starsHtml(newRating || 0);
+      }
     });
     rowsEl.appendChild(tr);
   }
@@ -497,8 +568,18 @@ volEl.addEventListener('input', (e) => {
   localStorage.setItem('pokekara_vol', e.target.value);
 });
 
+const myRatingInfoBtn = document.getElementById('myRatingInfoBtn');
+const myRatingInfoPopover = document.getElementById('myRatingInfoPopover');
+myRatingInfoBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  myRatingInfoPopover.classList.toggle('open');
+});
+myRatingInfoPopover.addEventListener('click', (e) => e.stopPropagation());
+document.addEventListener('click', () => myRatingInfoPopover.classList.remove('open'));
+
 document.querySelectorAll('thead th').forEach(th => {
-  th.addEventListener('click', () => {
+  th.addEventListener('click', (e) => {
+    if (e.target.closest('.info-btn') || e.target.closest('.info-popover')) return;
     const key = th.dataset.key;
     if (sortKey === key) {
       sortDir = sortDir === 'asc' ? 'desc' : 'asc';
@@ -516,9 +597,11 @@ document.querySelectorAll('thead th').forEach(th => {
   el.addEventListener('input', applyFilters);
 });
 collabFilterEl.addEventListener('change', applyFilters);
+myRatingFilterEl.addEventListener('change', applyFilters);
 document.getElementById('clearFilters').addEventListener('click', () => {
   qEl.value = ''; scoreMinEl.value = ''; scoreMaxEl.value = '';
   dateMinEl.value = ''; dateMaxEl.value = ''; collabFilterEl.value = 'all';
+  myRatingFilterEl.value = 'all';
   applyFilters();
 });
 
