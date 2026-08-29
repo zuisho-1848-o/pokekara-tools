@@ -1,0 +1,20 @@
+# ダウンロードした音源本体（数百MB〜。再ダウンロード可能）
+downloads/
+
+# 取得・生成される個人データ（fetch_list.py / generate_player.py で再生成可能）
+songs.json
+songs.csv
+ratings.json
+ratings.json.tmp
+failed_downloads.json
+player.html
+
+# 配布用zip（作業ファイルではない）
+pokekara_tools.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
