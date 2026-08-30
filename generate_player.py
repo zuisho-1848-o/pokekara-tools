@@ -320,6 +320,7 @@ TEMPLATE = """<!doctype html>
     <button id="nextBtn">次へ ⏭</button>
     <button id="loopOneBtn" title="この曲をリピート">🔂 1曲リピート</button>
     <button id="loopAllBtn" title="表示中の曲をリピート" class="on">🔁 全曲リピート</button>
+    <button id="jumpToPlayingBtn" title="再生中の曲までリストをスクロール">🎯 現在の曲へ</button>
     <span class="time" id="curTime">0:00</span>
     <input class="seek" id="seek" type="range" min="0" max="100" value="0">
     <span class="time" id="durTime">0:00</span>
@@ -553,6 +554,12 @@ document.getElementById('loopOneBtn').addEventListener('click', (e) => {
 document.getElementById('loopAllBtn').addEventListener('click', (e) => {
   loopAll = !loopAll;
   e.target.classList.toggle('on', loopAll);
+});
+document.getElementById('jumpToPlayingBtn').addEventListener('click', () => {
+  const playingRow = rowsEl.querySelector('tr.playing');
+  if (playingRow) {
+    playingRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 });
 
 const volEl = document.getElementById('vol');
