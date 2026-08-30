@@ -56,8 +56,10 @@ python3 fetch_list.py
 
 - スクリプト内 `BASE_PARAMS` の `u_share` / `t_uid` / `unique_device_id` を
   自分の値に書き換えてから実行する（現状は memo.md に記載の値が入っている）。
-- 実行すると `has_more` が `false` になるまで自動でページングし、
-  取得件数を逐次表示する。
+- デフォルトは**差分取得**: 一覧は投稿日時の新しい順に返るため、既存 `songs.json`
+  に含まれる曲（＝前回取得済み）が出てきた時点でページングを打ち切り、
+  新しく投稿された曲だけを既存データの先頭に追記する。
+- 全件を取得し直したい場合は `python3 fetch_list.py --full` を使う。
 - 出力ファイル:
   - `songs.json` — 全件の配列（mv_id, title, m4a_url, page_url, score, posted_at, duration_sec, song_id）
   - `songs.csv` — 同内容のCSV（Excel等でそのまま開ける文字コード）
@@ -111,10 +113,12 @@ python3 download_m4a.py
 python3 sync.py
 ```
 
-`fetch_list.py` は毎回全件を取得し直す（軽量なメタデータAPI呼び出しのみ）が、
-`download_m4a.py` 側が既存ファイルをスキップするため、実質的に差分ダウンロードになる。
-最後に `generate_player.py` が実行され、`player.html` も最新の内容に更新される。
-定期的にこれを叩けば、新しく投稿した曲だけが自動でダウンロードされる。
+`fetch_list.py` はデフォルトで差分取得（前回取得済みの曲に出会った時点で打ち切り）、
+`download_m4a.py` 側も既存ファイルをスキップするため、新しく投稿した曲だけが
+取得・ダウンロードされる。最後に `generate_player.py` が実行され、`player.html` も
+最新の内容に更新される。定期的にこれを叩けば新曲だけが自動で反映される。
+一覧を全件取り直したい場合は `python3 sync.py --full` のように渡すと
+内部の `fetch_list.py` にそのまま引き継がれる。
 
 ## 8. ブラウザで再生する（player.html）
 
