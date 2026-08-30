@@ -338,8 +338,8 @@ const audio = document.getElementById('audio');
 const rowsEl = document.getElementById('rows');
 const statusEl = document.getElementById('status');
 
-let sortKey = 'posted_at';
-let sortDir = 'desc';
+let sortKey = localStorage.getItem('pokekara_sort_key') || 'posted_at';
+let sortDir = localStorage.getItem('pokekara_sort_dir') || 'desc';
 let currentList = [];
 let currentIndex = -1;
 let loopOne = false;
@@ -524,13 +524,30 @@ audio.addEventListener('ended', () => {
   }
 });
 
+function savePlaybackState() {
+  if (currentIndex < 0) return;
+  const s = currentList[currentIndex];
+  if (!s) return;
+  try {
+    localStorage.setItem('pokekara_last_playback', JSON.stringify({ id: s.id, time: audio.currentTime || 0 }));
+  } catch {}
+}
+
+let lastSavedAt = 0;
 audio.addEventListener('timeupdate', () => {
   document.getElementById('curTime').textContent = fmtTime(audio.currentTime);
   document.getElementById('durTime').textContent = fmtTime(audio.duration);
   if (audio.duration) {
     document.getElementById('seek').value = (audio.currentTime / audio.duration) * 100;
   }
+  const now = Date.now();
+  if (now - lastSavedAt > 3000) {
+    lastSavedAt = now;
+    savePlaybackState();
+  }
 });
+audio.addEventListener('pause', savePlaybackState);
+window.addEventListener('beforeunload', savePlaybackState);
 
 document.getElementById('seek').addEventListener('input', (e) => {
   if (audio.duration) {
@@ -596,9 +613,12 @@ document.querySelectorAll('thead th').forEach(th => {
     }
     document.querySelectorAll('thead th').forEach(t => t.classList.remove('active'));
     th.classList.add('active');
+    localStorage.setItem('pokekara_sort_key', sortKey);
+    localStorage.setItem('pokekara_sort_dir', sortDir);
     applyFilters();
   });
 });
+document.querySelector(`thead th[data-key="${sortKey}"]`)?.classList.add('active');
 
 [qEl, scoreMinEl, scoreMaxEl, dateMinEl, dateMaxEl].forEach(el => {
   el.addEventListener('input', applyFilters);
@@ -612,10 +632,33 @@ document.getElementById('clearFilters').addEventListener('click', () => {
   applyFilters();
 });
 
+function restoreLastPlayback() {
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem('pokekara_last_playback') || 'null');
+  } catch {}
+  if (!saved || !saved.id) return;
+  const idx = currentList.findIndex(s => s.id === saved.id);
+  if (idx === -1) return;
+  currentIndex = idx;
+  const s = currentList[idx];
+  audio.src = s.src;
+  audio.addEventListener('loadedmetadata', () => {
+    audio.currentTime = saved.time || 0;
+  }, { once: true });
+  document.getElementById('nowPlaying').textContent =
+    `${s.title} ${s.score != null ? '(評価 ' + Number(s.score).toFixed(1) + ')' : ''}`;
+  render();
+  requestAnimationFrame(() => {
+    rowsEl.querySelector('tr.playing')?.scrollIntoView({ block: 'center' });
+  });
+}
+
 async function init() {
   const ratings = await loadRatings();
   for (const s of SONGS) s.myRating = ratings[s.id] ?? null;
   applyFilters();
+  restoreLastPlayback();
 }
 init();
 </script>
