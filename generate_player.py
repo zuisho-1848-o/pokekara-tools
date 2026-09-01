@@ -219,6 +219,23 @@ TEMPLATE = """<!doctype html>
   .info-popover dt { font-weight: bold; margin-top: 6px; }
   .info-popover dt:first-child { margin-top: 0; }
   .info-popover dd { margin: 0 0 0 0; color: var(--muted); }
+  .to-top-btn {
+    display: none;
+    position: fixed;
+    right: 16px;
+    bottom: 130px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--fg);
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 20;
+  }
+  .to-top-btn.show { display: block; }
   .player {
     position: fixed;
     left: 0; right: 0; bottom: 0;
@@ -328,6 +345,8 @@ TEMPLATE = """<!doctype html>
     <input class="vol" id="vol" type="range" min="0" max="100" value="80">
   </div>
 </div>
+
+<button class="to-top-btn" id="toTopBtn" title="一番上へ">▲</button>
 
 <audio id="audio"></audio>
 
@@ -571,6 +590,13 @@ document.getElementById('loopOneBtn').addEventListener('click', (e) => {
 document.getElementById('loopAllBtn').addEventListener('click', (e) => {
   loopAll = !loopAll;
   e.target.classList.toggle('on', loopAll);
+});
+const toTopBtn = document.getElementById('toTopBtn');
+window.addEventListener('scroll', () => {
+  toTopBtn.classList.toggle('show', window.scrollY > 300);
+});
+toTopBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 document.getElementById('jumpToPlayingBtn').addEventListener('click', () => {
   const playingRow = rowsEl.querySelector('tr.playing');
