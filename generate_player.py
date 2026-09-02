@@ -302,6 +302,13 @@ TEMPLATE = """<!doctype html>
       <option value="5">★5</option>
     </select>
   </label>
+  <label>曲名ごとに表示
+    <select id="titleGroupMode">
+      <option value="all">すべて表示</option>
+      <option value="best">最高評価のみ</option>
+      <option value="worst">最低評価のみ</option>
+    </select>
+  </label>
   <button id="clearFilters">絞り込み解除</button>
 </div>
 <div class="status" id="status"></div>
@@ -371,6 +378,7 @@ const dateMinEl = document.getElementById('dateMin');
 const dateMaxEl = document.getElementById('dateMax');
 const collabFilterEl = document.getElementById('collabFilter');
 const myRatingFilterEl = document.getElementById('myRatingFilter');
+const titleGroupModeEl = document.getElementById('titleGroupMode');
 
 let ratingsBackend = 'server';
 
@@ -416,6 +424,28 @@ function fmtTime(sec) {
   return `${m}:${s}`;
 }
 
+function pickExtremeByTitle(list, mode) {
+  const groups = new Map();
+  for (const s of list) {
+    if (!groups.has(s.title)) groups.set(s.title, []);
+    groups.get(s.title).push(s);
+  }
+  const result = [];
+  for (const items of groups.values()) {
+    const rated = items.filter(s => s.myRating != null);
+    if (rated.length === 0) {
+      result.push(...items);
+      continue;
+    }
+    let picked = rated[0];
+    for (const s of rated) {
+      if (mode === 'best' ? s.myRating > picked.myRating : s.myRating < picked.myRating) picked = s;
+    }
+    result.push(picked);
+  }
+  return result;
+}
+
 function applyFilters() {
   const q = qEl.value.trim().toLowerCase();
   const sMin = scoreMinEl.value !== '' ? parseFloat(scoreMinEl.value) : -Infinity;
@@ -438,6 +468,11 @@ function applyFilters() {
     if (myRatingMode !== 'all' && myRatingMode !== 'none' && (s.myRating || 0) < parseInt(myRatingMode, 10)) return false;
     return true;
   });
+
+  const titleGroupMode = titleGroupModeEl.value;
+  if (titleGroupMode !== 'all') {
+    list = pickExtremeByTitle(list, titleGroupMode);
+  }
 
   list.sort((a, b) => {
     let av = a[sortKey], bv = b[sortKey];
@@ -486,7 +521,7 @@ function render() {
       const newRating = s.myRating === r ? null : r;
       s.myRating = newRating;
       saveRating(s.id, newRating);
-      if (myRatingFilterEl.value !== 'all') {
+      if (myRatingFilterEl.value !== 'all' || titleGroupModeEl.value !== 'all') {
         applyFilters();
       } else {
         ratingTd.innerHTML = starsHtml(newRating || 0);
@@ -651,10 +686,11 @@ document.querySelector(`thead th[data-key="${sortKey}"]`)?.classList.add('active
 });
 collabFilterEl.addEventListener('change', applyFilters);
 myRatingFilterEl.addEventListener('change', applyFilters);
+titleGroupModeEl.addEventListener('change', applyFilters);
 document.getElementById('clearFilters').addEventListener('click', () => {
   qEl.value = ''; scoreMinEl.value = ''; scoreMaxEl.value = '';
   dateMinEl.value = ''; dateMaxEl.value = ''; collabFilterEl.value = 'all';
-  myRatingFilterEl.value = 'all';
+  myRatingFilterEl.value = 'all'; titleGroupModeEl.value = 'all';
   applyFilters();
 });
 
