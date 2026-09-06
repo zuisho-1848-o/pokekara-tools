@@ -3844,7 +3844,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/5d/9e/5d321101edb56bcece5c1689518c629e.m4a",
     "page_url": "https://u.pokekara.com/mv/1636009408093106176?u_share=u1522410711094480896&is_share_reward=0",
     "score": 94.18791198730469,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2023-03-15 23:20:13",
     "duration_sec": 281,
     "song_id": 1645491543
@@ -4152,7 +4152,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/e4/f6/e4b33a1cf41325cda2cdd56bd090dbf6.m4a",
     "page_url": "https://u.pokekara.com/mv/1619653267831771136?u_share=u1522410711094480896&is_share_reward=0",
     "score": 88.98348999023438,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2023-01-29 20:06:45",
     "duration_sec": 216,
     "song_id": 20828
@@ -4218,7 +4218,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/f7/52/f7898a4ba85a97df191e0d7b82df2352.m4a",
     "page_url": "https://u.pokekara.com/mv/1549020766938738688?u_share=u1522410711094480896&is_share_reward=0",
     "score": 95.57330322265625,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2022-07-18 22:18:25",
     "duration_sec": 295,
     "song_id": 25688
@@ -4240,7 +4240,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/cc/f5/cc7b181ace07f9093ffac93fd4d08ff5.m4a",
     "page_url": "https://u.pokekara.com/mv/1537721674927390720?u_share=u1522410711094480896&is_share_reward=0",
     "score": 94.29875946044922,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2022-06-17 17:59:51",
     "duration_sec": 335,
     "song_id": 20785
@@ -4251,7 +4251,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/f9/44/f96ae55210f5b1db2f02ad94c682a844.m4a",
     "page_url": "https://u.pokekara.com/mv/1537721357954412544?u_share=u1522410711094480896&is_share_reward=0",
     "score": 93.88150787353516,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2022-06-17 17:58:36",
     "duration_sec": 252,
     "song_id": 20719
@@ -4262,7 +4262,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/23/74/23a5da482d84e9423e92cfc20a43dc74.m4a",
     "page_url": "https://u.pokekara.com/mv/1537713375783895040?u_share=u1522410711094480896&is_share_reward=0",
     "score": 94.5833969116211,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2022-06-17 17:26:53",
     "duration_sec": 263,
     "song_id": 20707
@@ -4273,7 +4273,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/ed/80/ed7248c16191be41c25cd34f0640b880.m4a",
     "page_url": "https://u.pokekara.com/mv/1537704809543397376?u_share=u1522410711094480896&is_share_reward=0",
     "score": 93.66355895996094,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2022-06-17 16:52:50",
     "duration_sec": 302,
     "song_id": 20190
@@ -4284,7 +4284,7 @@
     "m4a_url": "https://cdn.pokekara.com/sp1/pokekara/m4a/large/87/77/8729259304a2aab44d5c50f7e1054d77.m4a",
     "page_url": "https://u.pokekara.com/mv/1537703699789279232?u_share=u1522410711094480896&is_share_reward=0",
     "score": 93.15819549560547,
-    "is_collab": true,
+    "is_collab": false,
     "posted_at": "2022-06-17 16:48:26",
     "duration_sec": 290,
     "song_id": 20078

@@ -111,7 +111,11 @@ def main():
                         f"?u_share={BASE_PARAMS['u_share']}&is_share_reward=0"
                     ),
                     "score": d.get("score"),
-                    "is_collab": d.get("vocal_source_head_uid") != d.get("uid"),
+                    # vocal_source_head_uid は古い投稿(コラボ機能追加前)には
+                    # フィールド自体が存在せず None になる。その場合は
+                    # 誤ってコラボ判定しないよう、値がある時だけ比較する。
+                    "is_collab": bool(d.get("vocal_source_head_uid"))
+                    and d.get("vocal_source_head_uid") != d.get("uid"),
                     "posted_at": (
                         datetime.datetime.fromtimestamp(
                             d["ctime"], tz=datetime.timezone.utc
