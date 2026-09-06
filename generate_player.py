@@ -309,6 +309,12 @@ TEMPLATE = """<!doctype html>
       <option value="worst">最低評価のみ</option>
     </select>
   </label>
+  <label>ダウンロード
+    <select id="localFilter">
+      <option value="all">すべて</option>
+      <option value="local">DL済みのみ</option>
+    </select>
+  </label>
   <button id="clearFilters">絞り込み解除</button>
 </div>
 <div class="status" id="status"></div>
@@ -380,6 +386,7 @@ const dateMaxEl = document.getElementById('dateMax');
 const collabFilterEl = document.getElementById('collabFilter');
 const myRatingFilterEl = document.getElementById('myRatingFilter');
 const titleGroupModeEl = document.getElementById('titleGroupMode');
+const localFilterEl = document.getElementById('localFilter');
 
 let ratingsBackend = 'server';
 
@@ -455,6 +462,7 @@ function applyFilters() {
   const dMax = dateMaxEl.value || '';
   const collabMode = collabFilterEl.value;
   const myRatingMode = myRatingFilterEl.value;
+  const localMode = localFilterEl.value;
 
   let list = SONGS.filter(s => {
     if (q && !s.title.toLowerCase().includes(q)) return false;
@@ -467,6 +475,7 @@ function applyFilters() {
     if (collabMode === 'collab' && !s.collab) return false;
     if (myRatingMode === 'none' && s.myRating) return false;
     if (myRatingMode !== 'all' && myRatingMode !== 'none' && (s.myRating || 0) < parseInt(myRatingMode, 10)) return false;
+    if (localMode === 'local' && !s.local) return false;
     return true;
   });
 
@@ -551,20 +560,30 @@ function playById(id) {
 }
 
 function playNext() {
-  if (currentList.length === 0) return;
-  if (currentIndex + 1 < currentList.length) {
-    playById(currentList[currentIndex + 1].id);
-  } else if (loopAll) {
-    playById(currentList[0].id);
+  const n = currentList.length;
+  if (n === 0) return;
+  let idx = currentIndex;
+  for (let step = 0; step < n; step++) {
+    idx++;
+    if (idx >= n) {
+      if (!loopAll) return;
+      idx = 0;
+    }
+    if (currentList[idx].local) { playById(currentList[idx].id); return; }
   }
 }
 
 function playPrev() {
-  if (currentList.length === 0) return;
-  if (currentIndex > 0) {
-    playById(currentList[currentIndex - 1].id);
-  } else if (loopAll) {
-    playById(currentList[currentList.length - 1].id);
+  const n = currentList.length;
+  if (n === 0) return;
+  let idx = currentIndex;
+  for (let step = 0; step < n; step++) {
+    idx--;
+    if (idx < 0) {
+      if (!loopAll) return;
+      idx = n - 1;
+    }
+    if (currentList[idx].local) { playById(currentList[idx].id); return; }
   }
 }
 
@@ -686,10 +705,12 @@ document.querySelector(`thead th[data-key="${sortKey}"]`)?.classList.add('active
 collabFilterEl.addEventListener('change', applyFilters);
 myRatingFilterEl.addEventListener('change', applyFilters);
 titleGroupModeEl.addEventListener('change', applyFilters);
+localFilterEl.addEventListener('change', applyFilters);
 document.getElementById('clearFilters').addEventListener('click', () => {
   qEl.value = ''; scoreMinEl.value = ''; scoreMaxEl.value = '';
   dateMinEl.value = ''; dateMaxEl.value = ''; collabFilterEl.value = 'all';
   myRatingFilterEl.value = 'all'; titleGroupModeEl.value = 'all';
+  localFilterEl.value = 'all';
   applyFilters();
 });
 
