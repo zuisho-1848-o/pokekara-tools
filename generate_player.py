@@ -368,6 +368,7 @@ let sortKey = localStorage.getItem('pokekara_sort_key') || 'posted_at';
 let sortDir = localStorage.getItem('pokekara_sort_dir') || 'desc';
 let currentList = [];
 let currentIndex = -1;
+let currentPlayingId = null;
 let loopOne = false;
 let loopAll = true;
 
@@ -485,6 +486,7 @@ function applyFilters() {
   });
 
   currentList = list;
+  currentIndex = currentPlayingId != null ? currentList.findIndex(s => s.id === currentPlayingId) : -1;
   render();
 }
 
@@ -498,7 +500,7 @@ function starsHtml(rating) {
 
 function render() {
   rowsEl.innerHTML = '';
-  const playingId = currentIndex >= 0 ? currentList[currentIndex]?.id : null;
+  const playingId = currentPlayingId;
 
   for (const s of currentList) {
     const tr = document.createElement('tr');
@@ -521,11 +523,7 @@ function render() {
       const newRating = s.myRating === r ? null : r;
       s.myRating = newRating;
       saveRating(s.id, newRating);
-      if (myRatingFilterEl.value !== 'all' || titleGroupModeEl.value !== 'all') {
-        applyFilters();
-      } else {
-        ratingTd.innerHTML = starsHtml(newRating || 0);
-      }
+      ratingTd.innerHTML = starsHtml(newRating || 0);
     });
     rowsEl.appendChild(tr);
   }
@@ -543,6 +541,7 @@ function playById(id) {
   const idx = currentList.findIndex(s => s.id === id);
   if (idx === -1) return;
   currentIndex = idx;
+  currentPlayingId = id;
   const s = currentList[idx];
   audio.src = s.src;
   audio.play();
@@ -703,6 +702,7 @@ function restoreLastPlayback() {
   const idx = currentList.findIndex(s => s.id === saved.id);
   if (idx === -1) return;
   currentIndex = idx;
+  currentPlayingId = saved.id;
   const s = currentList[idx];
   audio.src = s.src;
   audio.addEventListener('loadedmetadata', () => {
