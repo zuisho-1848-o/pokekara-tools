@@ -165,6 +165,18 @@ TEMPLATE = """<!doctype html>
   td.rating { white-space: nowrap; }
   td.rating .star { cursor: pointer; font-size: 15px; color: var(--muted); }
   td.rating .star.filled { color: #f5b301; }
+  td.ceiling { white-space: nowrap; }
+  .ceiling-select {
+    font-size: 12px;
+    padding: 3px 4px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--fg);
+  }
+  .ceiling-select.quick_fix { color: #2e9e4f; }
+  .ceiling-select.fundamental { color: #b8860b; }
+  .ceiling-select.ceiling { color: #c0392b; }
   .badge {
     font-size: 10px;
     padding: 1px 6px;
@@ -335,6 +347,7 @@ TEMPLATE = """<!doctype html>
           </dl>
         </div>
       </th>
+      <th data-key="ceiling" title="すぐ直せるミス／根本から要練習／天井 のいずれかを選んで記録できる">伸びしろ</th>
       <th data-key="posted_at">投稿日</th>
       <th data-key="duration">長さ</th>
     </tr>
@@ -405,13 +418,23 @@ async function loadRatings() {
   }
 }
 
-async function saveRating(mvId, rating) {
+function saveLocalField(mvId, field, value) {
+  const data = JSON.parse(localStorage.getItem('pokekara_ratings') || '{}');
+  const entry = { ...(data[mvId] || {}) };
+  if (value == null) delete entry[field];
+  else entry[field] = value;
+  if (Object.keys(entry).length === 0) delete data[mvId];
+  else data[mvId] = entry;
+  localStorage.setItem('pokekara_ratings', JSON.stringify(data));
+}
+
+async function saveField(endpoint, field, mvId, value) {
   if (ratingsBackend === 'server') {
     try {
-      const res = await fetch('/api/rate', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mv_id: mvId, rating }),
+        body: JSON.stringify({ mv_id: mvId, [field]: value }),
       });
       if (!res.ok) throw new Error('bad response');
       return;
@@ -419,10 +442,15 @@ async function saveRating(mvId, rating) {
       ratingsBackend = 'local';
     }
   }
-  const data = JSON.parse(localStorage.getItem('pokekara_ratings') || '{}');
-  if (rating == null) delete data[mvId];
-  else data[mvId] = rating;
-  localStorage.setItem('pokekara_ratings', JSON.stringify(data));
+  saveLocalField(mvId, field, value);
+}
+
+function saveRating(mvId, rating) {
+  return saveField('/api/rate', 'rating', mvId, rating);
+}
+
+function saveCeiling(mvId, ceiling) {
+  return saveField('/api/ceiling', 'ceiling', mvId, ceiling);
 }
 
 function fmtTime(sec) {
@@ -507,6 +535,20 @@ function starsHtml(rating) {
   return out;
 }
 
+const CEILING_OPTIONS = [
+  { value: '', label: '−' },
+  { value: 'quick_fix', label: '🔧 すぐ直せるミス' },
+  { value: 'fundamental', label: '📈 根本から要練習' },
+  { value: 'ceiling', label: '🧱 天井' },
+];
+function ceilingSelectHtml(ceiling) {
+  const cur = ceiling || '';
+  const opts = CEILING_OPTIONS.map(o =>
+    `<option value="${o.value}"${o.value === cur ? ' selected' : ''}>${o.label}</option>`
+  ).join('');
+  return `<select class="ceiling-select ${cur}">${opts}</select>`;
+}
+
 function render() {
   rowsEl.innerHTML = '';
   const playingId = currentPlayingId;
@@ -519,6 +561,7 @@ function render() {
       <td class="title">${escapeHtml(s.title)}${s.local ? '' : '<span class="badge">未DL</span>'}${s.collab ? '<span class="badge collab">コラボ</span>' : ''}</td>
       <td>${s.score != null ? Number(s.score).toFixed(1) : '-'}</td>
       <td class="rating">${starsHtml(s.myRating || 0)}</td>
+      <td class="ceiling">${ceilingSelectHtml(s.ceiling)}</td>
       <td>${escapeHtml((s.posted_at || '').slice(0, 16))}</td>
       <td>${fmtTime(s.duration)}</td>
     `;
@@ -533,6 +576,15 @@ function render() {
       s.myRating = newRating;
       saveRating(s.id, newRating);
       ratingTd.innerHTML = starsHtml(newRating || 0);
+    });
+    const ceilingTd = tr.querySelector('td.ceiling');
+    ceilingTd.addEventListener('click', (e) => e.stopPropagation());
+    const ceilingSelectEl = ceilingTd.querySelector('select');
+    ceilingSelectEl.addEventListener('change', (e) => {
+      const newCeiling = e.target.value || null;
+      s.ceiling = newCeiling;
+      saveCeiling(s.id, newCeiling);
+      ceilingSelectEl.className = `ceiling-select ${newCeiling || ''}`;
     });
     rowsEl.appendChild(tr);
   }
@@ -609,7 +661,7 @@ let lastSavedAt = 0;
 audio.addEventListener('timeupdate', () => {
   document.getElementById('curTime').textContent = fmtTime(audio.currentTime);
   document.getElementById('durTime').textContent = fmtTime(audio.duration);
-  if (audio.duration) {
+  if (isFinite(audio.duration) && audio.duration > 0) {
     document.getElementById('seek').value = (audio.currentTime / audio.duration) * 100;
   }
   const now = Date.now();
@@ -621,9 +673,24 @@ audio.addEventListener('timeupdate', () => {
 audio.addEventListener('pause', savePlaybackState);
 window.addEventListener('beforeunload', savePlaybackState);
 
+// 曲を切り替えた直後は duration がまだ読み込めておらず(NaN/Infinity)、
+// その間にシークバーを動かすと不正な値が計算されて再生位置が0に戻る
+// 不具合があった。duration が未確定の間は指定位置を保留し、
+// loadedmetadata で確定してから反映する。
+let pendingSeekRatio = null;
 document.getElementById('seek').addEventListener('input', (e) => {
-  if (audio.duration) {
-    audio.currentTime = (e.target.value / 100) * audio.duration;
+  const ratio = e.target.value / 100;
+  if (isFinite(audio.duration) && audio.duration > 0) {
+    audio.currentTime = ratio * audio.duration;
+    pendingSeekRatio = null;
+  } else {
+    pendingSeekRatio = ratio;
+  }
+});
+audio.addEventListener('loadedmetadata', () => {
+  if (pendingSeekRatio != null && isFinite(audio.duration) && audio.duration > 0) {
+    audio.currentTime = pendingSeekRatio * audio.duration;
+    pendingSeekRatio = null;
   }
 });
 
@@ -739,7 +806,11 @@ function restoreLastPlayback() {
 
 async function init() {
   const ratings = await loadRatings();
-  for (const s of SONGS) s.myRating = ratings[s.id] ?? null;
+  for (const s of SONGS) {
+    const r = ratings[s.id] || {};
+    s.myRating = r.rating ?? null;
+    s.ceiling = r.ceiling ?? null;
+  }
   applyFilters();
   restoreLastPlayback();
 }
