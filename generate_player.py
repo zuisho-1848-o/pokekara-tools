@@ -175,7 +175,9 @@ TEMPLATE = """<!doctype html>
     color: var(--fg);
   }
   .ceiling-select.quick_fix { color: #2e9e4f; }
-  .ceiling-select.fundamental { color: #b8860b; }
+  .ceiling-select.key_change { color: #2e7dd1; }
+  .ceiling-select.expression_room { color: #b8860b; }
+  .ceiling-select.song_limit { color: #a05a2c; }
   .ceiling-select.ceiling { color: #c0392b; }
   .badge {
     font-size: 10px;
@@ -347,7 +349,17 @@ TEMPLATE = """<!doctype html>
           </dl>
         </div>
       </th>
-      <th data-key="ceiling" title="すぐ直せるミス／根本から要練習／天井 のいずれかを選んで記録できる">伸びしろ</th>
+      <th data-key="ceiling">伸びしろ<span class="info-btn" id="ceilingInfoBtn">i</span>
+        <div class="info-popover" id="ceilingInfoPopover">
+          <dl>
+            <dt>🔧 すぐ直せるミス</dt><dd>ちょっとしたミスで、撮り直せば伸びる</dd>
+            <dt>🎹 キーを変えるべき</dt><dd>キー設定が合っていない。変えれば良くなる可能性がある</dd>
+            <dt>🎭 表現力で伸ばせる</dt><dd>歌唱技術はすでに十分。感情表現などにまだ伸びしろがあるが、相当な努力が必要</dd>
+            <dt>🧗 曲・音域的に厳しい</dt><dd>キーを変えても音域がきつい、または曲自体が技術的に難しすぎる。練習だけでは伸ばしにくい</dd>
+            <dt>🧱 天井</dt><dd>技術・感情表現ともに出し切った。これ以上は望みにくい</dd>
+          </dl>
+        </div>
+      </th>
       <th data-key="posted_at">投稿日</th>
       <th data-key="duration">長さ</th>
     </tr>
@@ -538,7 +550,9 @@ function starsHtml(rating) {
 const CEILING_OPTIONS = [
   { value: '', label: '−' },
   { value: 'quick_fix', label: '🔧 すぐ直せるミス' },
-  { value: 'fundamental', label: '📈 根本から要練習' },
+  { value: 'key_change', label: '🎹 キーを変えるべき' },
+  { value: 'expression_room', label: '🎭 表現力で伸ばせる' },
+  { value: 'song_limit', label: '🧗 曲・音域的に厳しい' },
   { value: 'ceiling', label: '🧱 天井' },
 ];
 function ceilingSelectHtml(ceiling) {
@@ -746,6 +760,15 @@ myRatingInfoBtn.addEventListener('click', (e) => {
 });
 myRatingInfoPopover.addEventListener('click', (e) => e.stopPropagation());
 document.addEventListener('click', () => myRatingInfoPopover.classList.remove('open'));
+
+const ceilingInfoBtn = document.getElementById('ceilingInfoBtn');
+const ceilingInfoPopover = document.getElementById('ceilingInfoPopover');
+ceilingInfoBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  ceilingInfoPopover.classList.toggle('open');
+});
+ceilingInfoPopover.addEventListener('click', (e) => e.stopPropagation());
+document.addEventListener('click', () => ceilingInfoPopover.classList.remove('open'));
 
 document.querySelectorAll('thead th').forEach(th => {
   th.addEventListener('click', (e) => {

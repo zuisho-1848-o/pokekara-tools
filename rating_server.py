@@ -9,12 +9,14 @@ ratings.json に保存するための簡易サーバー。
 
 API:
     GET  /api/ratings  → ratings.json の内容を返す
-                          （{mv_id: {"rating": 1-5, "ceiling": "quick_fix"|"fundamental"|"ceiling"}}、
+                          （{mv_id: {"rating": 1-5, "ceiling": "quick_fix"|"key_change"|
+                          "expression_room"|"song_limit"|"ceiling"}}、
                           各キーは値がある時だけ含まれる）
     POST /api/rate     → {"mv_id": "...", "rating": 1-5 または null} を受け取り
                           星評価を更新する（null は評価解除）
-    POST /api/ceiling  → {"mv_id": "...", "ceiling": "quick_fix"|"fundamental"|"ceiling"|null}
-                          を受け取り伸びしろ状態を更新する（null は未選択に戻す）
+    POST /api/ceiling  → {"mv_id": "...", "ceiling": "quick_fix"|"key_change"|
+                          "expression_room"|"song_limit"|"ceiling"|null} を受け取り
+                          伸びしろ状態を更新する（null は未選択に戻す）
 
 それ以外のパスは通常の静的ファイル配信（player.html, downloads/ 等）。
 player.html は毎回ディスクから読むので、generate_player.py で再生成しても
@@ -36,7 +38,7 @@ import threading
 
 PORT = 8765
 RATINGS_FILE = "ratings.json"
-CEILING_VALUES = {"quick_fix", "fundamental", "ceiling"}
+CEILING_VALUES = {"quick_fix", "key_change", "expression_room", "song_limit", "ceiling"}
 RANGE_RE = re.compile(r"bytes=(\d*)-(\d*)$")
 _lock = threading.Lock()
 

@@ -1,6 +1,7 @@
 {
   "2087583483702677504": {
-    "rating": 2
+    "rating": 3,
+    "ceiling": "key_change"
   },
   "2087578760694222848": {
     "rating": 3
@@ -12,10 +13,12 @@
     "rating": 4
   },
   "2086868156037058560": {
-    "rating": 3
+    "rating": 3,
+    "ceiling": "quick_fix"
   },
   "2086863683516256256": {
-    "rating": 4
+    "rating": 4,
+    "ceiling": "quick_fix"
   },
   "2086853275596955648": {
     "rating": 4
@@ -618,7 +621,8 @@
     "rating": 4
   },
   "1710292517446447104": {
-    "rating": 3
+    "rating": 3,
+    "ceiling": "quick_fix"
   },
   "1710289846500900864": {
     "rating": 2
@@ -981,7 +985,8 @@
     "rating": 5
   },
   "1631650969405480960": {
-    "rating": 3
+    "rating": 3,
+    "ceiling": "quick_fix"
   },
   "1631649724665032704": {
     "rating": 3
@@ -1002,10 +1007,12 @@
     "rating": 4
   },
   "1537721674927390720": {
-    "rating": 3
+    "rating": 3,
+    "ceiling": "quick_fix"
   },
   "1537713375783895040": {
-    "rating": 3
+    "rating": 3,
+    "ceiling": "quick_fix"
   },
   "1537704809543397376": {
     "rating": 3
@@ -1014,7 +1021,8 @@
     "rating": 2
   },
   "2095208577049710592": {
-    "rating": 4
+    "rating": 4,
+    "ceiling": "expression_room"
   },
   "2095201040914608128": {
     "rating": 4
@@ -1038,7 +1046,8 @@
     "rating": 4
   },
   "2095204979960086528": {
-    "rating": 4
+    "rating": 4,
+    "ceiling": "expression_room"
   },
   "1837181163968708608": {
     "rating": 5
@@ -1165,5 +1174,29 @@
   },
   "1699792767372619776": {
     "rating": 4
+  },
+  "2100995981157224448": {
+    "rating": 4,
+    "ceiling": "expression_room"
+  },
+  "2100993240269221888": {
+    "rating": 4,
+    "ceiling": "expression_room"
+  },
+  "2100988453069639680": {
+    "rating": 4,
+    "ceiling": "quick_fix"
+  },
+  "2100986078104469504": {
+    "rating": 4,
+    "ceiling": "expression_room"
+  },
+  "2100981230864027648": {
+    "rating": 4,
+    "ceiling": "quick_fix"
+  },
+  "2100977002135298048": {
+    "rating": 5,
+    "ceiling": "expression_room"
   }
 }
